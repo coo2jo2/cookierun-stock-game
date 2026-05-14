@@ -4,123 +4,98 @@
     <meta charset="UTF-8">
     <title>쿠키 투자런</title>
     <style>
-        body { background: #121212; color: white; font-family: 'Malgun Gothic', sans-serif; padding: 20px; margin: 0; }
-        .container { max-width: 900px; margin: 0 auto; }
-        .header { display: flex; justify-content: space-between; align-items: center; background: #222; padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #444; }
-        #seed-input { background: transparent; border: none; border-bottom: 2px solid #f1c40f; color: #f1c40f; font-size: 1.5rem; width: 180px; text-align: right; outline: none; }
-        .investment-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .card { background: #2a2a2a; border-radius: 15px; padding: 15px; border: 1px solid #333; text-align: center; }
-        .brand-img { width: 100%; height: 200px; object-fit: contain; background: #000; border-radius: 10px; border: 1px solid #444; }
-        .result-desc { color: #aaa; font-size: 0.9rem; margin: 10px 0; min-height: 40px; }
-        .percent-tag { color: #2ecc71; font-weight: bold; font-size: 1.2rem; margin-bottom: 10px; }
-        .input-box { width: 80%; padding: 10px; background: #1a1a1a; border: 1px solid #444; color: white; border-radius: 5px; text-align: center; }
-        .info-section { margin-top: 30px; padding: 20px; background: #1e1e1e; border-radius: 15px; }
-        .info-btn { display: none; background: #d35400; color: white; border: none; padding: 10px 15px; margin: 5px; border-radius: 5px; cursor: pointer; }
-        .action-btn { width: 100%; height: 60px; font-size: 1.3rem; font-weight: bold; margin-top: 20px; border-radius: 10px; cursor: pointer; border: none; background: #f1c40f; color: black; }
+        body { background: #121212; color: white; font-family: 'Malgun Gothic', sans-serif; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; border: 1px solid #333; padding: 20px; border-radius: 10px; }
+        .header { display: flex; justify-content: space-between; margin-bottom: 20px; padding: 10px; background: #222; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .card { background: #2a2a2a; padding: 15px; border-radius: 10px; text-align: center; border: 1px solid #444; }
+        .brand-img { width: 100%; height: 150px; object-fit: contain; background: #000; margin-bottom: 10px; }
+        .input-box { width: 80%; padding: 8px; background: #111; color: #f1c40f; border: 1px solid #f1c40f; text-align: center; }
+        .info-btn { display: none; background: #d35400; color: white; border: none; padding: 8px; margin: 5px; cursor: pointer; }
+        .main-btn { width: 100%; height: 50px; background: #f1c40f; font-weight: bold; margin-top: 20px; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
-        <h2>회차: <span id="turn-text">1</span> / 7</h2>
-        <div>시드 점수: <input type="number" id="seed-input" value="100000000"> ₩</div>
+        <h2>회차: <span id="turn-txt">1</span>/7</h2>
+        <div>보유 점수: <input type="number" id="total-score" value="100000000" style="width:120px;"></div>
     </div>
 
-    <div id="grid" class="investment-grid"></div>
+    <div class="grid" id="game-grid"></div>
 
-    <div class="info-section">
-        <h3>📂 획득 정보</h3>
-        <div id="info-btns"></div>
+    <div style="margin-top:20px;">
+        <strong>📂 획득 정보</strong>
+        <div id="info-box"></div>
     </div>
 
-    <button id="main-btn" class="action-btn" onclick="handleAction()">1회차 결과 보기</button>
+    <button class="main-btn" onclick="nextStep()" id="step-btn">1회차 결과 보기</button>
 </div>
 
 <script>
     let turn = 1;
-    let mode = "INPUT";
-    let seed = 100000000;
-
-    // 가람님이 정해주신 기업 정보 및 기본 번호 (r 번호 계산용)
-    const companies = [
-        { id: 'c4', name: '마카로즈', base: 0 },
-        { id: 'c3', name: '연금전자', base: 7 },
-        { id: 'c2', name: '포춘시스터즈', base: 14 },
-        { id: 'c1', name: '뮤직엔터', base: 21 }
+    let isInputMode = true;
+    const cos = [
+        {id:'c4', n:'마카로즈', b:0}, {id:'c3', n:'연금전자', b:7}, 
+        {id:'c2', n:'포춘시스터즈', b:14}, {id:'c1', n:'뮤직엔터', b:21}
     ];
 
-    // 가람님이 요청하신 모든 r1~r28 데이터를 로직에 따라 자동 생성 (예시 값 포함)
-    const rData = {};
-    for (let i = 1; i <= 28; i++) {
-        rData[i] = { 
-            desc: `r${i}번 기사: 시장의 변동성이 포착되었습니다.`, 
-            per: Math.floor(Math.random() * 41) - 20 // -20% ~ +20% 랜덤 (테스트용)
-        };
-    }
+    // 가람님의 파일 목록에 맞춘 PDF 리스트
+    const pdfs = ["HBS%20기사%20셈플.pdf", "직비모%20캡쳐%20파일.pdf", "포춘쿠키런%20카페%20유저들%20대화.pdf", "쿠키팝%20팬들%20커뮤니티.pdf", "제목.pdf", "마카로즈%20기사%20(폐기하세요).pdf", "쿠스패치%20단독%20기사.pdf"];
 
-    // 1. 그리드 초기화
-    const grid = document.getElementById('grid');
-    companies.forEach(c => {
-        grid.innerHTML += `
-            <div class="card">
-                <img id="img-${c.id}" src="resources/results/${c.id}.png" class="brand-img" onerror="this.src='https://via.placeholder.com/200?text=${c.name}'">
-                <h3>${c.name}</h3>
-                <div id="desc-${c.id}" class="result-desc">투자 금액을 입력하세요.</div>
-                <div id="per-${c.id}" class="percent-tag"></div>
-                <input type="number" id="inv-${c.id}" class="input-box" placeholder="금액 입력">
-            </div>`;
-    });
-
-    // 2. 정보 버튼 초기화
-    const infoContainer = document.getElementById('info-btns');
-    const infoFiles = ["HBS%20기사%20셈플.pdf", "직비모%20캡쳐%20파일.pdf", "포춘쿠키런%20카페%20유저들%20대화.pdf", "쿠키팝%20팬들%20커뮤니티.pdf", "제목.pdf", "마카로즈%20기사%20(폐기하세요).pdf", "쿠스패치%20단독%20기사.pdf"];
-    infoFiles.forEach((file, idx) => {
-        infoContainer.innerHTML += `<button class="info-btn" id="info-${idx+1}" onclick="window.open('resources/data/${file}', '_blank')">📄 정보 ${idx+1}</button>`;
-    });
-
-    function handleAction() {
-        if (mode === "INPUT") showResult();
-        else prepareNext();
-    }
-
-    function showResult() {
-        seed = parseInt(document.getElementById('seed-input').value);
-        let currentTurnGain = 0;
-
-        companies.forEach(c => {
-            const rNum = c.base + turn; // 가람님의 r번호 계산 공식 적용
-            const invest = parseInt(document.getElementById(`inv-${c.id}`).value) || 0;
-            const data = rData[rNum];
-
-            document.getElementById(`img-${c.id}`).src = `resources/results/r${rNum}.png`;
-            document.getElementById(`desc-${c.id}`).innerText = data.desc;
-            document.getElementById(`per-${c.id}`).innerText = (data.per >= 0 ? "+" : "") + data.per + "%";
-            
-            seed -= invest;
-            currentTurnGain += invest * (1 + data.per / 100);
+    function init() {
+        const g = document.getElementById('game-grid');
+        const ib = document.getElementById('info-box');
+        cos.forEach(c => {
+            g.innerHTML += `
+                <div class="card">
+                    <img id="img-${c.id}" src="${c.id}.png" class="brand-img">
+                    <div id="res-${c.id}" style="font-size:0.8rem; color:#aaa; margin-bottom:5px;">금액을 입력하세요</div>
+                    <div id="per-${c.id}" style="font-weight:bold; color:#2ecc71;"></div>
+                    <input type="number" id="in-${c.id}" class="input-box" placeholder="투자금">
+                </div>`;
         });
-
-        seed = Math.floor(seed + currentTurnGain);
-        document.getElementById('seed-input').value = seed;
-        document.getElementById(`info-${turn}`).style.display = "inline-block";
-        document.getElementById('main-btn').innerText = (turn < 7) ? (turn + 1) + "회차 준비하기" : "최종 결과 확인";
-        mode = "RESULT";
-    }
-
-    function prepareNext() {
-        if (turn >= 7) { alert("모든 투자가 종료되었습니다! 최종 점수: " + seed); return; }
-        turn++;
-        document.getElementById('turn-text').innerText = turn;
-        companies.forEach(c => {
-            document.getElementById(`img-${c.id}`).src = `resources/results/${c.id}.png`;
-            document.getElementById(`desc-${c.id}`).innerText = "투자 금액을 입력하세요.";
-            document.getElementById(`per-${c.id}`).innerText = "";
-            document.getElementById(`inv-${c.id}`).value = "";
+        pdfs.forEach((p, i) => {
+            ib.innerHTML += `<button id="f-${i+1}" class="info-btn" onclick="window.open('${p}')">정보 ${i+1}</button>`;
         });
-        document.getElementById('main-btn').innerText = turn + "회차 결과 보기";
-        mode = "INPUT";
     }
+
+    function nextStep() {
+        if(isInputMode) {
+            let currentScore = parseInt(document.getElementById('total-score').value);
+            let profit = 0;
+            cos.forEach(c => {
+                const inv = parseInt(document.getElementById('in-'+c.id).value) || 0;
+                const rNum = c.b + turn;
+                const pCent = Math.floor(Math.random() * 40) - 20; // 가람님 로직용 임시 퍼센트
+                
+                document.getElementById('img-'+c.id).src = `r${rNum}.png`;
+                document.getElementById('res-'+c.id).innerText = `r${rNum} 결과 적용`;
+                document.getElementById('per-'+c.id).innerText = (pCent>=0?'+':'') + pCent + '%';
+                
+                currentScore -= inv;
+                profit += inv * (1 + pCent/100);
+            });
+            document.getElementById('total-score').value = Math.floor(currentScore + profit);
+            document.getElementById('f-'+turn).style.display = 'inline-block';
+            document.getElementById('step-btn').innerText = (turn < 7) ? (turn+1)+'회차 준비' : '종료';
+            isInputMode = false;
+        } else {
+            if(turn >= 7) return;
+            turn++;
+            document.getElementById('turn-txt').innerText = turn;
+            cos.forEach(c => {
+                document.getElementById('img-'+c.id).src = `${c.id}.png`;
+                document.getElementById('res-'+c.id).innerText = '금액을 입력하세요';
+                document.getElementById('per-'+c.id).innerText = '';
+                document.getElementById('in-'+c.id).value = '';
+            });
+            document.getElementById('step-btn').innerText = turn + '회차 결과 보기';
+            isInputMode = true;
+        }
+    }
+    init();
 </script>
 </body>
 </html>
