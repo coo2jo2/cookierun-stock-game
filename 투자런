@@ -2,132 +2,148 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>쿠키 투자런</title>
+    <title>쿠키 투자런 (21억 챌린지)</title>
     <style>
-        body { background: #222; color: white; font-family: sans-serif; text-align: center; padding: 20px; }
-        .game-board { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; max-width: 800px; margin: 0 auto; }
-        .company-card { background: #333; padding: 15px; border-radius: 10px; border: 2px solid #555; }
+        body { background: #121212; color: white; font-family: 'Pretendard', sans-serif; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; }
         
-        /* 이미지가 표시되는 곳 (c1~c4 -> r 로 교체) */
-        .status-img { width: 100%; height: 200px; background: #000; margin-bottom: 10px; object-fit: contain; }
+        /* 상단 시드 점수 및 회차 정보 */
+        .header { display: flex; justify-content: space-between; align-items: center; background: #222; padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #444; }
+        #seed-input { background: transparent; border: none; border-bottom: 2px solid #f1c40f; color: #f1c40f; font-size: 1.5rem; width: 200px; text-align: right; }
         
-        .input-group { margin-top: 10px; }
-        input { width: 80%; padding: 8px; border-radius: 5px; border: none; text-align: center; font-size: 1.1em; }
+        /* 기업 투자 카드 섹션 */
+        .investment-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        .card { background: #2a2a2a; border-radius: 15px; padding: 15px; border: 1px solid #333; transition: 0.3s; }
+        .brand-img { width: 100%; height: 220px; object-fit: contain; background: #000; border-radius: 10px; margin-bottom: 10px; }
         
-        .info-panel { margin: 30px 0; padding: 20px; background: #444; border-radius: 10px; }
-        .info-btn { background: #f39c12; color: white; border: none; padding: 10px 20px; margin: 5px; cursor: pointer; border-radius: 5px; }
+        /* 설명 및 상승률 텍스트 */
+        .result-desc { color: #aaa; font-size: 0.9rem; min-height: 40px; margin: 10px 0; }
+        .percent-tag { color: #2ecc71; font-weight: bold; font-size: 1.1rem; }
+
+        .input-box { width: 90%; padding: 10px; background: #1a1a1a; border: 1px solid #444; color: white; border-radius: 5px; text-align: center; }
         
-        .next-btn { background: #27ae60; color: white; border: none; padding: 20px 40px; font-size: 1.5em; cursor: pointer; border-radius: 10px; margin-top: 30px; width: 100%; max-width: 800px; }
-        h2 { color: #f1c40f; }
+        /* 정보 버튼 */
+        .info-section { margin-top: 30px; padding: 20px; background: #1e1e1e; border-radius: 15px; }
+        .info-btn { background: #d35400; color: white; border: none; padding: 10px 15px; margin: 5px; border-radius: 5px; cursor: pointer; display: none; }
+        
+        /* 메인 액션 버튼 */
+        .action-btn { width: 100%; height: 70px; font-size: 1.5rem; font-weight: bold; margin-top: 30px; border-radius: 15px; cursor: pointer; border: none; transition: 0.3s; }
+        .btn-result { background: #f1c40f; color: #000; }
+        .btn-next { background: #27ae60; color: white; }
     </style>
 </head>
 <body>
 
-    <h1>💰 쿠키 투자런 (21억 도전)</h1>
-    <h2>현재 회차: <span id="turn-display">1</span> / 7</h2>
-
-    <div class="game-board">
-        <!-- 뮤직엔터 (c1) -->
-        <div class="company-card">
-            <img id="img-c1" src="resources/results/c1.png" class="status-img">
-            <h3>뮤직엔터</h3>
-            <div class="input-group">
-                <input type="number" id="invest-c1" placeholder="투자 금액 입력">
-            </div>
+<div class="container">
+    <div class="header">
+        <div>
+            <h2>현재 회차: <span id="turn">1</span> / 7</h2>
         </div>
-
-        <!-- 포춘시스터즈 (c2) -->
-        <div class="company-card">
-            <img id="img-c2" src="resources/results/c2.png" class="status-img">
-            <h3>포춘시스터즈</h3>
-            <div class="input-group">
-                <input type="number" id="invest-c2" placeholder="투자 금액 입력">
-            </div>
-        </div>
-
-        <!-- 연금전자 (c3) -->
-        <div class="company-card">
-            <img id="img-c3" src="resources/results/c3.png" class="status-img">
-            <h3>연금전자</h3>
-            <div class="input-group">
-                <input type="number" id="invest-c3" placeholder="투자 금액 입력">
-            </div>
-        </div>
-
-        <!-- 마카로즈 (c4) -->
-        <div class="company-card">
-            <img id="img-c4" src="resources/results/c4.png" class="status-img">
-            <h3>마카로즈</h3>
-            <div class="input-group">
-                <input type="number" id="invest-c4" placeholder="투자 금액 입력">
-            </div>
+        <div>
+            <span>시드 점수: </span>
+            <input type="number" id="seed-input" placeholder="초기 점수 입력"> ₩
         </div>
     </div>
 
-    <div class="info-panel">
-        <h3>📂 획득 가능한 정보</h3>
-        <div id="info-list">
-            <!-- 클릭해야만 볼 수 있는 버튼들 -->
+    <div class="investment-grid">
+        <!-- 기업별 카드 (c1~c4) -->
+        <script>
+            const companies = [
+                { id: 'c4', name: '마카로즈', base: 0 },
+                { id: 'c3', name: '연금전자', base: 7 },
+                { id: 'c2', name: '포춘시스터즈', base: 14 },
+                { id: 'c1', name: '뮤직엔터', base: 21 }
+            ];
+            companies.forEach(c => {
+                document.write(`
+                    <div class="card">
+                        <img id="img-${c.id}" src="resources/results/${c.id}.png" class="brand-img">
+                        <h3>${c.name}</h3>
+                        <div id="desc-${c.id}" class="result-desc">투자 금액을 입력하세요.</div>
+                        <div id="per-${c.id}" class="percent-tag"></div>
+                        <input type="number" id="inv-${c.id}" class="input-box" placeholder="금액 입력">
+                    </div>
+                `);
+            });
+        </script>
+    </div>
+
+    <div class="info-section">
+        <h3>📂 획득한 정보 (클릭하여 확인)</h3>
+        <div id="info-btns">
+            <button class="info-btn" id="info-1" onclick="openFile(1)">📄 정보 1</button>
+            <button class="info-btn" id="info-2" onclick="openFile(2)">📄 정보 2</button>
+            <button class="info-btn" id="info-3" onclick="openFile(3)">📄 정보 3</button>
+            <button class="info-btn" id="info-4" onclick="openFile(4)">📄 정보 4</button>
+            <button class="info-btn" id="info-5" onclick="openFile(5)">📄 정보 5</button>
+            <button class="info-btn" id="info-6" onclick="openFile(6)">📄 정보 6</button>
+            <button class="info-btn" id="info-7" onclick="openFile(7)">📄 정보 7</button>
         </div>
     </div>
 
-    <button id="main-btn" class="next-btn" onclick="showResult()">1회차 결과 보기</button>
+    <button id="main-btn" class="action-btn btn-result" onclick="showResult()">1회차 결과 보기</button>
+</div>
 
 <script>
     let turn = 1;
-    // 가람님의 r 로직 매핑 (예시: 뮤직엔터 1회차 결과는 r22)
-    const resultMapping = {
-        1: { c1: 'r22', c2: 'r1', c3: 'r10', c4: 'r1' },
-        2: { c1: 'r23', c2: 'r2', c3: 'r11', c4: 'r2' },
-        // ... 가람님이 알려준 r1~r28을 여기에 다 넣으면 됨
+    const infoNames = ["HBS 기사 셈플.pdf", "직비모 캡쳐 파일.pdf", "포춘쿠키런 카페 유저들 대화.pdf", "쿠키팝 팬들 커뮤니티.pdf", "제목.pdf", "마카로즈 기사 (폐기하세요).pdf", "쿠스패치 단독 기사.pdf"];
+
+    // 가람님, 여기에 각 r 이미지에 맞는 설명과 상승률을 채우시면 됩니다!
+    const rData = {
+        1: { desc: "마카로즈 초기 시장 진입", per: 5 },
+        8: { desc: "연금전자 특허 소송 시작", per: -2 },
+        15: { desc: "포춘쿠키런 서버 불안정 제보", per: -5 },
+        22: { desc: "슈가툰 데뷔 기대감 폭발", per: 15 },
+        // ... 이런 식으로 28번까지 쭉 적으세요
     };
 
-    const infoFiles = [
-        "HBS 기사 셈플.pdf", "직비모 캡쳐 파일.pdf", "포춘쿠키런 카페 유저들 대화.pdf",
-        "쿠키팝 팬들 커뮤니티.pdf", "제목.pdf", "마카로즈 기사 (폐기하세요).pdf", "쿠스패치 단독 기사.pdf"
-    ];
-
-    // 결과 보기 버튼 클릭 시
     function showResult() {
-        const mapping = resultMapping[turn];
-        
-        // 이미지 교체 로직
-        document.getElementById('img-c1').src = `resources/results/${mapping.c1}.png`;
-        document.getElementById('img-c2').src = `resources/results/${mapping.c2}.png`;
-        document.getElementById('img-c3').src = `resources/results/${mapping.c3}.png`;
-        document.getElementById('img-c4').src = `resources/results/${mapping.c4}.png`;
+        let totalGain = 0;
+        let seed = parseInt(document.getElementById('seed-input').value) || 0;
 
-        // 정보 버튼 생성
-        const infoList = document.getElementById('info-list');
-        const btn = document.createElement('button');
-        btn.className = "info-btn";
-        btn.innerText = `📄 정보 ${turn} 확인하기`;
-        btn.onclick = () => window.open(`resources/data/${infoFiles[turn-1]}`, '_blank');
-        infoList.appendChild(btn);
+        companies.forEach(c => {
+            const rNum = c.base + turn;
+            const invest = parseInt(document.getElementById(`inv-${c.id}`).value) || 0;
+            const data = rData[rNum] || { desc: "결과 확인 중...", per: 0 };
 
-        // 다음 회차 준비
-        const mainBtn = document.getElementById('main-btn');
-        if (turn < 7) {
-            mainBtn.innerText = `${turn + 1}회차 준비하기`;
-            mainBtn.onclick = prepareNextTurn;
-        } else {
-            mainBtn.innerText = "최종 투자 종료";
-            mainBtn.disabled = true;
-        }
+            // 1. 이미지 교체
+            document.getElementById(`img-${c.id}`).src = `resources/results/r${rNum}.png`;
+            // 2. 설명 및 퍼센트 표시
+            document.getElementById(`desc-${c.id}`).innerText = data.desc;
+            document.getElementById(`per-${c.id}`).innerText = (data.per > 0 ? "+" : "") + data.per + "%";
+            
+            // 3. 점수 계산 (시드에서 투자금 빼고, 상승분 더하기)
+            seed -= invest;
+            totalGain += invest * (1 + data.per / 100);
+        });
+
+        document.getElementById('seed-input').value = Math.floor(seed + totalGain);
+        document.getElementById(`info-${turn}`).style.display = "inline-block";
+
+        const btn = document.getElementById('main-btn');
+        btn.innerText = turn < 7 ? (turn + 1) + "회차 준비하기" : "최종 투자 종료";
+        btn.className = "action-btn btn-next";
+        btn.onclick = prepareNext;
     }
 
-    // 다음 회차 준비 (다시 c1~c4로 초기화할지, 그대로 둘지 선택 가능)
-    function prepareNextTurn() {
+    function prepareNext() {
         turn++;
-        document.getElementById('turn-display').innerText = turn;
-        
-        // 다시 입력받기 위해 버튼 멘트 변경
-        const mainBtn = document.getElementById('main-btn');
-        mainBtn.innerText = `${turn}회차 결과 보기`;
-        mainBtn.onclick = showResult;
-        
-        // 입력창 비우기 (선택 사항)
-        document.querySelectorAll('input').forEach(input => input.value = "");
+        document.getElementById('turn').innerText = turn;
+        companies.forEach(c => {
+            document.getElementById(`img-${c.id}`).src = `resources/results/${c.id}.png`;
+            document.getElementById(`desc-${c.id}`).innerText = "투자 금액을 입력하세요.";
+            document.getElementById(`per-${c.id}`).innerText = "";
+            document.getElementById(`inv-${c.id}`).value = "";
+        });
+
+        const btn = document.getElementById('main-btn');
+        btn.innerText = turn + "회차 결과 보기";
+        btn.className = "action-btn btn-result";
+        btn.onclick = showResult;
+    }
+
+    function openFile(n) {
+        window.open(`resources/data/${infoNames[n-1]}`, '_blank');
     }
 </script>
 </body>
