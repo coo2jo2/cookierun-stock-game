@@ -2,74 +2,72 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>쿠키 투자런 (21억 챌린지)</title>
+    <title>쿠키 투자런</title>
     <style>
-        body { background: #121212; color: white; font-family: 'Pretendard', sans-serif; padding: 20px; }
-        .container { max-width: 1000px; margin: 0 auto; }
-        
-        /* 상단 시드 점수 및 회차 정보 */
+        body { background: #121212; color: white; font-family: 'Malgun Gothic', sans-serif; padding: 20px; margin: 0; }
+        .container { max-width: 900px; margin: 0 auto; }
         .header { display: flex; justify-content: space-between; align-items: center; background: #222; padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #444; }
-        #seed-input { background: transparent; border: none; border-bottom: 2px solid #f1c40f; color: #f1c40f; font-size: 1.5rem; width: 200px; text-align: right; }
+        #seed-input { background: transparent; border: none; border-bottom: 2px solid #f1c40f; color: #f1c40f; font-size: 1.5rem; width: 180px; text-align: right; outline: none; }
         
-        /* 기업 투자 카드 섹션 */
-        .investment-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
-        .card { background: #2a2a2a; border-radius: 15px; padding: 15px; border: 1px solid #333; transition: 0.3s; }
-        .brand-img { width: 100%; height: 220px; object-fit: contain; background: #000; border-radius: 10px; margin-bottom: 10px; }
+        .investment-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .card { background: #2a2a2a; border-radius: 15px; padding: 15px; border: 1px solid #333; text-align: center; }
+        .brand-img { width: 100%; height: 200px; object-fit: contain; background: #000; border-radius: 10px; }
         
-        /* 설명 및 상승률 텍스트 */
-        .result-desc { color: #aaa; font-size: 0.9rem; min-height: 40px; margin: 10px 0; }
-        .percent-tag { color: #2ecc71; font-weight: bold; font-size: 1.1rem; }
-
-        .input-box { width: 90%; padding: 10px; background: #1a1a1a; border: 1px solid #444; color: white; border-radius: 5px; text-align: center; }
+        .result-desc { color: #aaa; font-size: 0.9rem; margin: 10px 0; min-height: 40px; }
+        .percent-tag { color: #2ecc71; font-weight: bold; font-size: 1.2rem; margin-bottom: 10px; }
+        .input-box { width: 80%; padding: 10px; background: #1a1a1a; border: 1px solid #444; color: white; border-radius: 5px; text-align: center; }
         
-        /* 정보 버튼 */
         .info-section { margin-top: 30px; padding: 20px; background: #1e1e1e; border-radius: 15px; }
-        .info-btn { background: #d35400; color: white; border: none; padding: 10px 15px; margin: 5px; border-radius: 5px; cursor: pointer; display: none; }
+        .info-btn { display: none; background: #d35400; color: white; border: none; padding: 10px 15px; margin: 5px; border-radius: 5px; cursor: pointer; }
         
-        /* 메인 액션 버튼 */
-        .action-btn { width: 100%; height: 70px; font-size: 1.5rem; font-weight: bold; margin-top: 30px; border-radius: 15px; cursor: pointer; border: none; transition: 0.3s; }
-        .btn-result { background: #f1c40f; color: #000; }
-        .btn-next { background: #27ae60; color: white; }
+        .action-btn { width: 100%; height: 60px; font-size: 1.3rem; font-weight: bold; margin-top: 20px; border-radius: 10px; cursor: pointer; border: none; background: #f1c40f; color: black; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
-        <div>
-            <h2>현재 회차: <span id="turn">1</span> / 7</h2>
-        </div>
-        <div>
-            <span>시드 점수: </span>
-            <input type="number" id="seed-input" placeholder="초기 점수 입력"> ₩
-        </div>
+        <h2>회차: <span id="turn-text">1</span> / 7</h2>
+        <div>시드 점수: <input type="number" id="seed-input" value="100000000"> ₩</div>
     </div>
 
     <div class="investment-grid">
-        <!-- 기업별 카드 (c1~c4) -->
-        <script>
-            const companies = [
-                { id: 'c4', name: '마카로즈', base: 0 },
-                { id: 'c3', name: '연금전자', base: 7 },
-                { id: 'c2', name: '포춘시스터즈', base: 14 },
-                { id: 'c1', name: '뮤직엔터', base: 21 }
-            ];
-            companies.forEach(c => {
-                document.write(`
-                    <div class="card">
-                        <img id="img-${c.id}" src="resources/results/${c.id}.png" class="brand-img">
-                        <h3>${c.name}</h3>
-                        <div id="desc-${c.id}" class="result-desc">투자 금액을 입력하세요.</div>
-                        <div id="per-${c.id}" class="percent-tag"></div>
-                        <input type="number" id="inv-${c.id}" class="input-box" placeholder="금액 입력">
-                    </div>
-                `);
-            });
-        </script>
+        <!-- 마카로즈 (c4) -->
+        <div class="card">
+            <img id="img-c4" src="resources/results/c4.png" class="brand-img">
+            <h3>마카로즈</h3>
+            <div id="desc-c4" class="result-desc">투자 금액을 입력하세요.</div>
+            <div id="per-c4" class="percent-tag"></div>
+            <input type="number" id="inv-c4" class="input-box" placeholder="금액 입력">
+        </div>
+        <!-- 연금전자 (c3) -->
+        <div class="card">
+            <img id="img-c3" src="resources/results/c3.png" class="brand-img">
+            <h3>연금전자</h3>
+            <div id="desc-c3" class="result-desc">투자 금액을 입력하세요.</div>
+            <div id="per-c3" class="percent-tag"></div>
+            <input type="number" id="inv-c3" class="input-box" placeholder="금액 입력">
+        </div>
+        <!-- 포춘시스터즈 (c2) -->
+        <div class="card">
+            <img id="img-c2" src="resources/results/c2.png" class="brand-img">
+            <h3>포춘시스터즈</h3>
+            <div id="desc-c2" class="result-desc">투자 금액을 입력하세요.</div>
+            <div id="per-c2" class="percent-tag"></div>
+            <input type="number" id="inv-c2" class="input-box" placeholder="금액 입력">
+        </div>
+        <!-- 뮤직엔터 (c1) -->
+        <div class="card">
+            <img id="img-c1" src="resources/results/c1.png" class="brand-img">
+            <h3>뮤직엔터</h3>
+            <div id="desc-c1" class="result-desc">투자 금액을 입력하세요.</div>
+            <div id="per-c1" class="percent-tag"></div>
+            <input type="number" id="inv-c1" class="input-box" placeholder="금액 입력">
+        </div>
     </div>
 
     <div class="info-section">
-        <h3>📂 획득한 정보 (클릭하여 확인)</h3>
+        <h3>📂 획득 정보</h3>
         <div id="info-btns">
             <button class="info-btn" id="info-1" onclick="openFile(1)">📄 정보 1</button>
             <button class="info-btn" id="info-2" onclick="openFile(2)">📄 정보 2</button>
@@ -81,54 +79,64 @@
         </div>
     </div>
 
-    <button id="main-btn" class="action-btn btn-result" onclick="showResult()">1회차 결과 보기</button>
+    <button id="main-btn" class="action-btn" onclick="handleAction()">1회차 결과 보기</button>
 </div>
 
 <script>
     let turn = 1;
-    const infoNames = ["HBS 기사 셈플.pdf", "직비모 캡쳐 파일.pdf", "포춘쿠키런 카페 유저들 대화.pdf", "쿠키팝 팬들 커뮤니티.pdf", "제목.pdf", "마카로즈 기사 (폐기하세요).pdf", "쿠스패치 단독 기사.pdf"];
+    let mode = "INPUT"; // INPUT(금액입력중), RESULT(결과표시중)
+    
+    // 기업 데이터 매핑
+    const companies = [
+        { id: 'c4', base: 0 }, { id: 'c3', base: 7 }, { id: 'c2', base: 14 }, { id: 'c1', base: 21 }
+    ];
 
-    // 가람님, 여기에 각 r 이미지에 맞는 설명과 상승률을 채우시면 됩니다!
+    // 가람님, 여기에 r1~r28 기사 내용과 퍼센트를 넣으세요!
     const rData = {
-        1: { desc: "마카로즈 초기 시장 진입", per: 5 },
-        8: { desc: "연금전자 특허 소송 시작", per: -2 },
-        15: { desc: "포춘쿠키런 서버 불안정 제보", per: -5 },
-        22: { desc: "슈가툰 데뷔 기대감 폭발", per: 15 },
-        // ... 이런 식으로 28번까지 쭉 적으세요
+        1: { desc: "마카로즈 1회차 뉴스...", per: 10 },
+        8: { desc: "연금전자 1회차 뉴스...", per: -5 },
+        15: { desc: "포춘 1회차 뉴스...", per: 2 },
+        22: { desc: "뮤직 1회차 뉴스...", per: 20 },
+        // ... (나머지도 기업 규칙에 맞춰서 번호 넣으시면 됩니다)
     };
 
+    function handleAction() {
+        if (mode === "INPUT") {
+            showResult();
+        } else {
+            prepareNext();
+        }
+    }
+
     function showResult() {
-        let totalGain = 0;
         let seed = parseInt(document.getElementById('seed-input').value) || 0;
+        let totalGain = 0;
 
         companies.forEach(c => {
             const rNum = c.base + turn;
             const invest = parseInt(document.getElementById(`inv-${c.id}`).value) || 0;
-            const data = rData[rNum] || { desc: "결과 확인 중...", per: 0 };
+            const data = rData[rNum] || { desc: "결과 데이터 없음", per: 0 };
 
-            // 1. 이미지 교체
             document.getElementById(`img-${c.id}`).src = `resources/results/r${rNum}.png`;
-            // 2. 설명 및 퍼센트 표시
             document.getElementById(`desc-${c.id}`).innerText = data.desc;
-            document.getElementById(`per-${c.id}`).innerText = (data.per > 0 ? "+" : "") + data.per + "%";
+            document.getElementById(`per-${c.id}`).innerText = (data.per >= 0 ? "+" : "") + data.per + "%";
             
-            // 3. 점수 계산 (시드에서 투자금 빼고, 상승분 더하기)
             seed -= invest;
             totalGain += invest * (1 + data.per / 100);
         });
 
         document.getElementById('seed-input').value = Math.floor(seed + totalGain);
         document.getElementById(`info-${turn}`).style.display = "inline-block";
-
-        const btn = document.getElementById('main-btn');
-        btn.innerText = turn < 7 ? (turn + 1) + "회차 준비하기" : "최종 투자 종료";
-        btn.className = "action-btn btn-next";
-        btn.onclick = prepareNext;
+        
+        document.getElementById('main-btn').innerText = (turn < 7) ? (turn + 1) + "회차 준비하기" : "투자 종료";
+        mode = "RESULT";
     }
 
     function prepareNext() {
+        if (turn >= 7) return;
         turn++;
-        document.getElementById('turn').innerText = turn;
+        document.getElementById('turn-text').innerText = turn;
+        
         companies.forEach(c => {
             document.getElementById(`img-${c.id}`).src = `resources/results/${c.id}.png`;
             document.getElementById(`desc-${c.id}`).innerText = "투자 금액을 입력하세요.";
@@ -136,13 +144,12 @@
             document.getElementById(`inv-${c.id}`).value = "";
         });
 
-        const btn = document.getElementById('main-btn');
-        btn.innerText = turn + "회차 결과 보기";
-        btn.className = "action-btn btn-result";
-        btn.onclick = showResult;
+        document.getElementById('main-btn').innerText = turn + "회차 결과 보기";
+        mode = "INPUT";
     }
 
     function openFile(n) {
+        const infoNames = ["HBS 기사 셈플.pdf", "직비모 캡쳐 파일.pdf", "포춘쿠키런 카페 유저들 대화.pdf", "쿠키팝 팬들 커뮤니티.pdf", "제목.pdf", "마카로즈 기사 (폐기하세요).pdf", "쿠스패치 단독 기사.pdf"];
         window.open(`resources/data/${infoNames[n-1]}`, '_blank');
     }
 </script>
