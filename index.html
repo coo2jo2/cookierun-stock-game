@@ -4,98 +4,170 @@
     <meta charset="UTF-8">
     <title>쿠키 투자런</title>
     <style>
-        body { background: #121212; color: white; font-family: 'Malgun Gothic', sans-serif; padding: 20px; }
-        .container { max-width: 800px; margin: 0 auto; border: 1px solid #333; padding: 20px; border-radius: 10px; }
-        .header { display: flex; justify-content: space-between; margin-bottom: 20px; padding: 10px; background: #222; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .card { background: #2a2a2a; padding: 15px; border-radius: 10px; text-align: center; border: 1px solid #444; }
-        .brand-img { width: 100%; height: 150px; object-fit: contain; background: #000; margin-bottom: 10px; }
-        .input-box { width: 80%; padding: 8px; background: #111; color: #f1c40f; border: 1px solid #f1c40f; text-align: center; }
-        .info-btn { display: none; background: #d35400; color: white; border: none; padding: 8px; margin: 5px; cursor: pointer; }
-        .main-btn { width: 100%; height: 50px; background: #f1c40f; font-weight: bold; margin-top: 20px; cursor: pointer; }
+        body { background: #121212; color: white; font-family: 'Malgun Gothic', sans-serif; padding: 20px; margin: 0; }
+        .container { max-width: 900px; margin: 0 auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; background: #222; padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #444; }
+        #seed-input { background: transparent; border: none; border-bottom: 2px solid #f1c40f; color: #f1c40f; font-size: 1.5rem; width: 180px; text-align: right; outline: none; }
+        .investment-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .card { background: #2a2a2a; border-radius: 15px; padding: 15px; border: 1px solid #333; text-align: center; }
+        .brand-img { width: 100%; height: 200px; object-fit: contain; background: #000; border-radius: 10px; border: 1px solid #444; }
+        .result-desc { color: #aaa; font-size: 0.95rem; margin: 15px 0; min-height: 45px; line-height: 1.4; }
+        .percent-tag { color: #2ecc71; font-weight: bold; font-size: 1.2rem; margin-bottom: 10px; }
+        .input-box { width: 80%; padding: 10px; background: #1a1a1a; border: 1px solid #444; color: white; border-radius: 5px; text-align: center; }
+        .info-section { margin-top: 30px; padding: 20px; background: #1e1e1e; border-radius: 15px; }
+        .info-btn { display: none; background: #d35400; color: white; border: none; padding: 10px 15px; margin: 5px; border-radius: 5px; cursor: pointer; }
+        .action-btn { width: 100%; height: 60px; font-size: 1.3rem; font-weight: bold; margin-top: 20px; border-radius: 10px; cursor: pointer; border: none; background: #f1c40f; color: black; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
-        <h2>회차: <span id="turn-txt">1</span>/7</h2>
-        <div>보유 점수: <input type="number" id="total-score" value="100000000" style="width:120px;"></div>
+        <h2>회차: <span id="turn-text">1</span> / 7</h2>
+        <div>보유 점수: <input type="number" id="seed-input" value="100000000"> ₩</div>
     </div>
 
-    <div class="grid" id="game-grid"></div>
+    <div id="grid" class="investment-grid"></div>
 
-    <div style="margin-top:20px;">
-        <strong>📂 획득 정보</strong>
-        <div id="info-box"></div>
+    <div class="info-section">
+        <h3>📂 이번 회차 획득 정보 (클릭 시 확인)</h3>
+        <div id="info-btns"></div>
     </div>
 
-    <button class="main-btn" onclick="nextStep()" id="step-btn">1회차 결과 보기</button>
+    <button id="main-btn" class="action-btn" onclick="handleAction()">1회차 결과 보기</button>
 </div>
 
 <script>
     let turn = 1;
-    let isInputMode = true;
-    const cos = [
-        {id:'c4', n:'마카로즈', b:0}, {id:'c3', n:'연금전자', b:7}, 
-        {id:'c2', n:'포춘시스터즈', b:14}, {id:'c1', n:'뮤직엔터', b:21}
+    let mode = "INPUT"; 
+    let seed = 100000000;
+
+    const companies = [
+        { id: 'c4', name: '마카로즈', base: 0 },
+        { id: 'c3', name: '연금전자', base: 7 },
+        { id: 'c2', name: '포춘시스터즈', base: 14 },
+        { id: 'c1', name: '뮤직엔터', base: 21 }
     ];
 
-    // 가람님의 파일 목록에 맞춘 PDF 리스트
-    const pdfs = ["HBS%20기사%20셈플.pdf", "직비모%20캡쳐%20파일.pdf", "포춘쿠키런%20카페%20유저들%20대화.pdf", "쿠키팝%20팬들%20커뮤니티.pdf", "제목.pdf", "마카로즈%20기사%20(폐기하세요).pdf", "쿠스패치%20단독%20기사.pdf"];
+    const pdfFiles = [
+        "HBS%20기사%20셈플.pdf", "직비모%20캡쳐%20파일.pdf", "포춘쿠키런%20카페%20유저들%20대화.pdf",
+        "쿠키팝%20팬들%20커뮤니티.pdf", "제목.pdf", "마카로즈%20기사%20(폐기하세요).pdf", "쿠스패치%20단독%20기사.pdf"
+    ];
+
+    const rData = {
+        // 마카로즈 (r1~r7)
+        1: { desc: "마카로즈, 브랜드 런칭 기념 '전 품목 1+1' 행사 진행! 소비자 반응 좋아...", per: 12 },
+        2: { desc: "마카로즈 '광채 쿠션' SNS 대유행, 해외 수요 높아져...", per: 18 },
+        3: { desc: "원료 공급처 '설탕 광산' 파업 사태... 마카로즈 생산 차질 비상", per: -15 },
+        4: { desc: "마카로즈, 과대 광고 논란에 휩싸여... 소비자 위원회 조사 착수", per: -10 },
+        5: { desc: "논란 정면 돌파! 마카로즈, '성분 투명 공개'로 신뢰 회복", per: 7 },
+        6: { desc: "강력한 라이벌 '두쫀쫀' 등장... 뷰티 시장 점유율 뺏기나?", per: -5 },
+        7: { desc: "마카로즈, '무지개 시럽' 특허 획득! 전 세계 뷰티 시장 독점 예고", per: 25 },
+
+        // 연금전자 (r8~r14)
+        8: { desc: "연금전자, '젤리 배터리' 효율 500% 개선 성공... 전 세계가 주목", per: 20 },
+        9: { desc: "연금전자, AI 반도체 설계도 완성... 주문 폭주로 공장 풀가동", per: 28 },
+        10: { desc: "실험실 폭발 사고... 연금전자 1공장 생산 라인 일시 중단", per: -20 },
+        11: { desc: "경쟁사 '영웅전자'의 특허 소송... 연금전자 핵심 기술 사용 금지 위기", per: -12 },
+        12: { desc: "승소! 연금전자, 독자 기술 인정받으며 '영웅전자'로부터 거액의 배상금 획득", per: 18 },
+        13: { desc: "차세대 CPU '포도잼' 양산 수율 하락... 목표 생산량 달성 실패", per: -8 },
+        14: { desc: "'마법가루 반도체' 상용화 성공... 연금전자, 업계 부동의 1위 등극", per: 35 },
+
+        // 포춘시스터즈 (r15~r21)
+        15: { desc: "출시 첫날 터졌다…포춘시스터즈 ‘포춘쿠키런’, 앱스토어 1위 직행", per: 22 },
+        16: { desc: "역대급 혜자 보상 통했다…포춘시스터즈, 최고 동시접속자 달성", per: 15 },
+        17: { desc: "‘접속이 안 된다’ 포춘쿠키런 서버 마비에 이용자 분통…장기 점검 돌입", per: -18 },
+        18: { desc: "‘점수 폭주 막을 수 없나’…포춘쿠키런, 신규 캐릭터 밸런스 붕괴 논란", per: -12 },
+        19: { desc: "포춘시스터즈 ‘유저 의견 적극 반영’…친화적 패치·사과 보상 예고", per: 8 },
+        20: { desc: "‘게임 밖까지 접수했다’…포춘쿠키런, 슈가툰 멤버 오렌지맛 쿠키와 협업", per: 14 },
+        21: { desc: "포춘시스터즈 비상…오렌지맛 쿠키 학교폭력 논란에 협업 전면 중단", per: -35 },
+
+        // 뮤직엔터 (r22~r28)
+        22: { desc: "뮤직엔터, 신인 그룹 '슈가툰' 데뷔곡으로 차트 올킬!", per: 25 },
+        23: { desc: "월드투어 티켓 5분만에 전석 매진...민트라이엇 글로벌 팬덤 확장 가속화", per: 20 },
+        24: { desc: "주력 작곡가 '블랙베리맛 쿠키'와 계약 만료... 향후 곡 수급 비상", per: -15 },
+        25: { desc: "슈가툰 뮤직비디오 표절 의혹 제기... 뮤직 엔터 신뢰도 하락", per: -18 },
+        26: { desc: "민트라이엇 정규 1집 앨범 'M.R', 선주문 200만장 돌파!", per: 22 },
+        27: { desc: "포춘시스터즈와 역대급 콜라보! '오렌지맛 쿠키'가 게임 속으로!", per: 12 },
+        28: { desc: "충격! '오렌지맛 쿠키' 학교 폭력 논란 공식 인정...모든 활동 중단", per: -50 }
+    };
 
     function init() {
-        const g = document.getElementById('game-grid');
-        const ib = document.getElementById('info-box');
-        cos.forEach(c => {
-            g.innerHTML += `
+        const grid = document.getElementById('grid');
+        const infoContainer = document.getElementById('info-btns');
+        
+        companies.forEach(c => {
+            grid.innerHTML += `
                 <div class="card">
                     <img id="img-${c.id}" src="${c.id}.png" class="brand-img">
-                    <div id="res-${c.id}" style="font-size:0.8rem; color:#aaa; margin-bottom:5px;">금액을 입력하세요</div>
-                    <div id="per-${c.id}" style="font-weight:bold; color:#2ecc71;"></div>
-                    <input type="number" id="in-${c.id}" class="input-box" placeholder="투자금">
+                    <h3>${c.name}</h3>
+                    <div id="desc-${c.id}" class="result-desc">투자 금액을 입력하세요.</div>
+                    <div id="per-${c.id}" class="percent-tag"></div>
+                    <input type="number" id="inv-${c.id}" class="input-box" placeholder="금액 입력">
                 </div>`;
         });
-        pdfs.forEach((p, i) => {
-            ib.innerHTML += `<button id="f-${i+1}" class="info-btn" onclick="window.open('${p}')">정보 ${i+1}</button>`;
+
+        pdfFiles.forEach((file, idx) => {
+            infoContainer.innerHTML += `<button class="info-btn" id="info-${idx+1}" onclick="window.open('${file}', '_blank')">📄 정보 ${idx+1}</button>`;
         });
+
+        updateInfoDisplay();
     }
 
-    function nextStep() {
-        if(isInputMode) {
-            let currentScore = parseInt(document.getElementById('total-score').value);
-            let profit = 0;
-            cos.forEach(c => {
-                const inv = parseInt(document.getElementById('in-'+c.id).value) || 0;
-                const rNum = c.b + turn;
-                const pCent = Math.floor(Math.random() * 40) - 20; // 가람님 로직용 임시 퍼센트
-                
-                document.getElementById('img-'+c.id).src = `r${rNum}.png`;
-                document.getElementById('res-'+c.id).innerText = `r${rNum} 결과 적용`;
-                document.getElementById('per-'+c.id).innerText = (pCent>=0?'+':'') + pCent + '%';
-                
-                currentScore -= inv;
-                profit += inv * (1 + pCent/100);
-            });
-            document.getElementById('total-score').value = Math.floor(currentScore + profit);
-            document.getElementById('f-'+turn).style.display = 'inline-block';
-            document.getElementById('step-btn').innerText = (turn < 7) ? (turn+1)+'회차 준비' : '종료';
-            isInputMode = false;
-        } else {
-            if(turn >= 7) return;
-            turn++;
-            document.getElementById('turn-txt').innerText = turn;
-            cos.forEach(c => {
-                document.getElementById('img-'+c.id).src = `${c.id}.png`;
-                document.getElementById('res-'+c.id).innerText = '금액을 입력하세요';
-                document.getElementById('per-'+c.id).innerText = '';
-                document.getElementById('in-'+c.id).value = '';
-            });
-            document.getElementById('step-btn').innerText = turn + '회차 결과 보기';
-            isInputMode = true;
-        }
+    function updateInfoDisplay() {
+        // 회차 시작 시 해당 회차의 정보 버튼 노출
+        const currentBtn = document.getElementById(`info-${turn}`);
+        if(currentBtn) currentBtn.style.display = "inline-block";
     }
-    init();
+
+    function handleAction() {
+        if (mode === "INPUT") showResult();
+        else prepareNext();
+    }
+
+    function showResult() {
+        seed = parseInt(document.getElementById('seed-input').value) || 0;
+        let totalGain = 0;
+
+        companies.forEach(c => {
+            const rNum = c.base + turn;
+            const invest = parseInt(document.getElementById(`inv-${c.id}`).value) || 0;
+            const data = rData[rNum];
+
+            document.getElementById(`img-${c.id}`).src = `r${rNum}.png`;
+            document.getElementById(`desc-${c.id}`).innerText = data.desc;
+            document.getElementById(`per-${c.id}`).innerText = (data.per >= 0 ? "+" : "") + data.per + "%";
+            
+            seed -= invest;
+            totalGain += invest * (1 + data.per / 100);
+        });
+
+        seed = Math.floor(seed + totalGain);
+        document.getElementById('seed-input').value = seed;
+        
+        const mainBtn = document.getElementById('main-btn');
+        mainBtn.innerText = (turn < 7) ? (turn + 1) + "회차 준비하기" : "투자 종료 (최종 점수 확인)";
+        mode = "RESULT";
+    }
+
+    function prepareNext() {
+        if (turn >= 7) return;
+        turn++;
+        document.getElementById('turn-text').innerText = turn;
+        updateInfoDisplay();
+
+        companies.forEach(c => {
+            document.getElementById(`img-${c.id}`).src = `${c.id}.png`;
+            document.getElementById(`desc-${c.id}`).innerText = "투자 금액을 입력하세요.";
+            document.getElementById(`per-${c.id}`).innerText = "";
+            document.getElementById(`inv-${c.id}`).value = "";
+        });
+
+        document.getElementById('main-btn').innerText = turn + "회차 결과 보기";
+        mode = "INPUT";
+    }
+
+    window.onload = init;
 </script>
 </body>
 </html>
